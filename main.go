@@ -24,21 +24,12 @@ func readFile(path string) ([]string, error) {
 
 func main() {
 	txt, _ := readFile("test.yaml")
-
-	rn := createNode("Root", 0, make([]*node, 0))
-
-	tmp := []interface{}{rn, -1}
-	root := [][]interface{}{tmp}
-	d := diagnostic{root: root}
-
-	T := new(tree)
-	T.root = rn
-
+	d := newYamlParser()
 	for _, line := range txt {
 		indent, cutted := trim(line)
-		//fmt.Printf("%d\n", indent)
-		d.scan(cutted, indent, T)
+		// fmt.Printf("%d\n", indent)
+		d.scan(cutted, indent)
 	}
 
-	T.travel(T.root)
+	d.tree.travel(d.tree.root)
 }
