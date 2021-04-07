@@ -2,7 +2,15 @@ package main
 
 import "regexp"
 
-func rgxShortcut(rgx string, txt string) ([][][]byte, error) {
+const (
+	singleLineRgx       = `(.+)\s*:\s*([^\|>]+)$`
+	continuingLineRgx   = `([^\s]+)\s*:\s*$`
+	arrayElementRgx     = `([-\s*]+)\s*([^\s]*)\s*:\s*([^\s]*)\s*`
+	continuingStringRgx = `(.+)\s*:\s*[>\|]\s*$`
+	continuingArrRgx    = `^\s*-\s*$`
+)
+
+func rgxShortcut(rgx string, txt string) ([][]string, error) {
 	r, err := regexp.Compile(rgx)
 
 	if err != nil {
@@ -12,7 +20,7 @@ func rgxShortcut(rgx string, txt string) ([][][]byte, error) {
 	if !r.Match([]byte(txt)) {
 		return nil, err
 	}
-	match := r.FindAllSubmatch([]byte(txt), -1)
+	match := r.FindAllStringSubmatch(txt, -1)
 	return match, nil
 }
 
@@ -24,14 +32,5 @@ func trim(line string) (int, string) {
 		}
 	}
 
-	indent := i * 2
-
-	if analyze(line) == (arrayElement{}) {
-		indent += 1
-	}
-	if analyze(line) == (continuingArr{}) {
-		indent += 1
-	}
-
-	return indent, line[i:]
+	return i * 2, line[i:]
 }

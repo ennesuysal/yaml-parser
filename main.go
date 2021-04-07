@@ -27,7 +27,7 @@ func main() {
 	d := newYamlParser()
 	for _, line := range txt {
 		indent, cutted := trim(line)
-		// fmt.Printf("%d\n", indent)
+		//fmt.Printf("%d\n", indent)
 		d.scan(cutted, indent)
 	}
 

@@ -5,14 +5,6 @@ import (
 	"strings"
 )
 
-const (
-	singleLineRgx       = `(.+)\s*:\s*([^\|>]+)$`
-	continuingLineRgx   = `([^\s]+)\s*:\s*$`
-	arrayElementRgx     = `-\s*([^\s]*)\s*:\s*([^\s]*)\s*`
-	continuingStringRgx = `(.+)\s*:\s*[>\|]\s*$`
-	continuingArrRgx    = `^\s*-\s*$`
-)
-
 type lineType interface{}
 type continuingLine struct{}
 type singleLine struct{}
@@ -68,6 +60,10 @@ func analyze(line string) lineType {
 }
 
 func checkArray(p *node) *node {
+	if p.ty == 1 {
+		return p
+	}
+
 	for _, x := range p.children {
 		if x.ty == 1 {
 			return x
@@ -106,7 +102,7 @@ func (d *diagnostic) scan(line string, indent int) {
 	switch ty.(type) {
 	case arrayElement:
 		d.writeBuffer()
-		d.parseArrayElement(line, indent)
+		d.parseArrayElement(line, indent+1)
 
 	case singleLine:
 		d.writeBuffer()
@@ -124,7 +120,7 @@ func (d *diagnostic) scan(line string, indent int) {
 
 	case continuingArr:
 		d.continuing = continuingArr{}
-		d.continuingIndent = indent
+		d.continuingIndent = indent + 1
 		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
 	}
 }
