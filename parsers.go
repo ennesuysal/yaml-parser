@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -35,10 +36,25 @@ func (d *diagnostic) parseSingleLine(line string, indent float32) {
 	}
 }
 
-func (d *diagnostic) parseArrayElement(line string, indent float32) {
+func (d *diagnostic) parseArraySingle(line string, indent float32) {
+	out, _ := rgxShortcut(singleLineRgx, line)
+	child := createNode(out[0][2], 0, nil)
+	key, _ := d.parseArrayElement(line, indent)
+	d.tree.insert(key, child)
+}
+
+func (d *diagnostic) parseArrayCont(line string, indent float32) {
+	key, cIndent := d.parseArrayElement(line, indent)
+	d.root = append(d.root, []interface{}{key, cIndent})
+}
+
+func (d *diagnostic) parseArrayElement(line string, indent float32) (*node, float32) {
 	out, _ := rgxShortcut(arrayElementRgx, line)
 	if out != nil {
 		arrCount := float32(strings.Count(out[0][1], "-"))
+		spcCount := float32(strings.Count(out[0][1], " "))
+
+		spcPerArr := int(spcCount / arrCount)
 
 		key := createNode(out[0][2], 0, make([]*node, 0))
 
@@ -56,23 +72,19 @@ func (d *diagnostic) parseArrayElement(line string, indent float32) {
 			tmp := createNode(make([]interface{}, 0), 1, nil)
 			pa.value = append(pa.value.([]interface{}), tmp)
 			pa = tmp
-			condIndent += (i + 1) * 2
-			d.root = append(d.root, []interface{}{pa, condIndent})
+			condIndent += 2 + (i+1)*float32(spcPerArr)*2
+			d.root = append(d.root, []interface{}{pa, condIndent - 0.5})
 		}
+		fmt.Printf("%d, %f\n", spcPerArr, condIndent)
 		nodeArray := make([]*node, 0)
 		nodeArray = append(nodeArray, key)
 		pa.value = append(pa.value.([]interface{}), nodeArray)
 
 		d.last = arrayElement{}
 		d.lastIndent = condIndent
-
-		if out[0][3] != "" {
-			child := createNode(out[0][3], 0, nil)
-			d.tree.insert(key, child)
-		} else {
-			d.root = append(d.root, []interface{}{key, indent + (i+1)*2})
-		}
+		return key, indent + (i+1)*2
 	}
+	return nil, -2
 }
 
 func parseContStr(line string) interface{} {

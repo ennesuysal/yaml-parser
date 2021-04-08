@@ -28,7 +28,7 @@ func main() {
 	for i, line := range txt {
 		indent, cutted := trim(line)
 		//	fmt.Printf("%d\n", indent)
-		if i == 7 {
+		if i == 2 {
 			println()
 		}
 		d.scan(cutted, indent)

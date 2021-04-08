@@ -7,7 +7,9 @@ import (
 
 type lineType interface{}
 type continuingLine struct{}
+type arrayContinuing struct{}
 type singleLine struct{}
+type arraySingle struct{}
 type arrayElement struct{}
 type continuingString struct{}
 type continuingArr struct{}
@@ -47,7 +49,11 @@ func analyze(line string) lineType {
 	contStr, _ := regexp.MatchString(continuingStringRgx, line)
 	contArr, _ := regexp.MatchString(continuingArrRgx, line)
 
-	if arrayEl {
+	if arrayEl && single {
+		return arraySingle{}
+	} else if arrayEl && continuing {
+		return arrayContinuing{}
+	} else if arrayEl {
 		return arrayElement{}
 	} else if single {
 		return singleLine{}
@@ -106,6 +112,14 @@ func (d *diagnostic) scan(line string, indent float32) {
 	}
 
 	switch ty.(type) {
+	case arrayContinuing:
+		d.writeBuffer()
+		d.parseArrayCont(line, indent)
+
+	case arraySingle:
+		d.writeBuffer()
+		d.parseArraySingle(line, indent)
+
 	case arrayElement:
 		d.writeBuffer()
 		d.parseArrayElement(line, indent)
