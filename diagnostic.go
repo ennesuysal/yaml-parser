@@ -18,19 +18,22 @@ type diagnostic struct {
 	tree             *tree
 	continuing       lineType
 	continuingRoot   *node
-	continuingIndent int
+	continuingIndent float32
+	last             lineType
+	lastIndent       float32
 	buffer           []string
 }
 
 func newYamlParser() *diagnostic {
 	d := new(diagnostic)
 	d.continuing = nil
+	d.last = nil
 
 	rn := createNode("Root", 0, make([]*node, 0))
 	d.tree = new(tree)
 	d.tree.root = rn
 
-	tmp := []interface{}{rn, -1}
+	tmp := []interface{}{rn, float32(-1)}
 	root := [][]interface{}{tmp}
 	d.root = root
 
@@ -82,8 +85,12 @@ func (d *diagnostic) writeBuffer() {
 	}
 }
 
-func (d *diagnostic) scan(line string, indent int) {
-	for lastRoot := d.root[len(d.root)-1][1].(int); indent <= lastRoot; lastRoot = d.root[len(d.root)-1][1].(int) {
+func (d *diagnostic) scan(line string, indent float32) {
+	ty := analyze(line)
+	if ty == (arrayElement{}) {
+		indent++
+	}
+	for lastRoot := d.root[len(d.root)-1][1].(float32); indent <= lastRoot; lastRoot = d.root[len(d.root)-1][1].(float32) {
 		d.root = d.root[:len(d.root)-1]
 	}
 
@@ -98,15 +105,14 @@ func (d *diagnostic) scan(line string, indent int) {
 		}
 	}
 
-	ty := analyze(line)
 	switch ty.(type) {
 	case arrayElement:
 		d.writeBuffer()
-		d.parseArrayElement(line, indent+1)
+		d.parseArrayElement(line, indent)
 
 	case singleLine:
 		d.writeBuffer()
-		d.parseSingleLine(line)
+		d.parseSingleLine(line, indent)
 
 	case continuingLine:
 		d.writeBuffer()
@@ -117,10 +123,12 @@ func (d *diagnostic) scan(line string, indent int) {
 		d.continuingIndent = indent
 		d.parseContinuingLine(parseContStr(line).(string)+":", indent)
 		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
+		d.last = nil
 
 	case continuingArr:
 		d.continuing = continuingArr{}
 		d.continuingIndent = indent + 1
 		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
+		d.last = nil
 	}
 }

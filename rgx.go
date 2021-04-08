@@ -3,9 +3,9 @@ package main
 import "regexp"
 
 const (
-	singleLineRgx       = `([^-]+)\s*:\s*([^\|>]+)$`
+	singleLineRgx       = `([^-]+)\s*:\s*([^-\|>]+)\s*$`
 	continuingLineRgx   = `([^\s]+)\s*:\s*$`
-	arrayElementRgx     = `((?:-\s*)+)\s*([^\s:]*)\s*:?\s*([^\s]*)\s*`
+	arrayElementRgx     = `^\s*((?:-\s*)+)\s*([^\s-:]*)\s*:?\s*([^\s-]*)\s*`
 	continuingStringRgx = `(.+)\s*:\s*[>\|]\s*$`
 	continuingArrRgx    = `^\s*-\s*$`
 )
@@ -24,7 +24,7 @@ func rgxShortcut(rgx string, txt string) ([][]string, error) {
 	return match, nil
 }
 
-func trim(line string) (int, string) {
+func trim(line string) (float32, string) {
 	i := 0
 	for ; i < len(line); i++ {
 		if line[i] != ' ' && line[i] != '\t' {
@@ -32,5 +32,5 @@ func trim(line string) (int, string) {
 		}
 	}
 
-	return i * 2, line[i:]
+	return float32(i * 2), line[i:]
 }

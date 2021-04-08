@@ -25,9 +25,12 @@ func readFile(path string) ([]string, error) {
 func main() {
 	txt, _ := readFile("test.yaml")
 	d := newYamlParser()
-	for _, line := range txt {
+	for i, line := range txt {
 		indent, cutted := trim(line)
 		//	fmt.Printf("%d\n", indent)
+		if i == 7 {
+			println()
+		}
 		d.scan(cutted, indent)
 	}
 
