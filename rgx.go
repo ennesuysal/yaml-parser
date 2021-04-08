@@ -5,7 +5,7 @@ import "regexp"
 const (
 	singleLineRgx       = `([^-]+)\s*:\s*([^\|>]+)$`
 	continuingLineRgx   = `([^\s]+)\s*:\s*$`
-	arrayElementRgx     = `((?:-\s*)+)\s*([^\s]*)\s*:?\s*([^\s]*)\s*`
+	arrayElementRgx     = `((?:-\s*)+)\s*([^\s:]*)\s*:?\s*([^\s]*)\s*`
 	continuingStringRgx = `(.+)\s*:\s*[>\|]\s*$`
 	continuingArrRgx    = `^\s*-\s*$`
 )
