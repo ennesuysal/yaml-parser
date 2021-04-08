@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -8,7 +9,7 @@ import (
 func (d *diagnostic) parseContinuingLine(line string, indent int) {
 	out, _ := rgxShortcut(continuingLineRgx, line)
 	if out != nil {
-		//fmt.Printf("ContLine: %v\n", out)
+		fmt.Printf("ContLine: %v\n", out)
 		key := createNode(out[0][1], 0, nil)
 		d.tree.insert(d.root[len(d.root)-1][0].(*node), key)
 		d.root = append(d.root, []interface{}{key, indent})
@@ -31,13 +32,8 @@ func (d *diagnostic) parseArrayElement(line string, indent int) {
 	out, _ := rgxShortcut(arrayElementRgx, line)
 	if out != nil {
 		arrCount := strings.Count(out[0][1], "-")
-		childIndent := 0
-		if arrCount > 1 {
-			childIndent = indent + (arrCount-1)*2
-		}
-		spaceCount := strings.Count(out[0][1], " ")
-		indent += spaceCount * 2
-		println(indent)
+		//spaceCount := strings.Count(out[0][1], " ")
+		// var SpaceForOne int = spaceCount /arrCount
 
 		//fmt.Printf("ArrayEl: %v\n", out)
 		key := createNode(out[0][2], 0, make([]*node, 0))
@@ -48,6 +44,7 @@ func (d *diagnostic) parseArrayElement(line string, indent int) {
 			pa = createNode(make([]interface{}, 0), 1, nil)
 			d.tree.insert(d.root[len(d.root)-1][0].(*node), pa)
 			d.root = append(d.root, []interface{}{pa, indent})
+			fmt.Printf("New Array Indent: %d\n", indent)
 		}
 		var condIndent int
 		i := 0
@@ -55,11 +52,9 @@ func (d *diagnostic) parseArrayElement(line string, indent int) {
 			tmp := createNode(make([]interface{}, 0), 1, nil)
 			pa.value = append(pa.value.([]interface{}), tmp)
 			pa = tmp
-			condIndent = indent + i + 1
-			if i == arrCount-2 {
-				condIndent = childIndent
-			}
+			condIndent = indent + (i+1)*2
 			d.root = append(d.root, []interface{}{pa, condIndent})
+			fmt.Printf("Array Indent: %d\n", condIndent)
 		}
 
 		//fmt.Printf("%v", pa.value)
@@ -69,7 +64,7 @@ func (d *diagnostic) parseArrayElement(line string, indent int) {
 			child := createNode(out[0][3], 0, nil)
 			d.tree.insert(key, child)
 		} else {
-			d.root = append(d.root, []interface{}{key, indent + i + 1})
+			d.root = append(d.root, []interface{}{key, indent + i*2 + 1})
 		}
 	}
 }
