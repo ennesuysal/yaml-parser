@@ -50,14 +50,14 @@ func analyze(line string) lineType {
 	contStr, _ := regexp.MatchString(continuingStringRgx, line)
 	contArr, _ := regexp.MatchString(continuingArrRgx, line)
 
-	if contStr {
+	if arrayEl && contStr {
+		return arrContStr{}
+	} else if contStr {
 		return continuingString{}
 	} else if arrayEl && single {
 		return arraySingle{}
 	} else if arrayEl && continuing {
 		return arrayContinuing{}
-	} else if arrayEl && contStr {
-		return arrContStr{}
 	} else if arrayEl {
 		return arrayElement{}
 	} else if single {
@@ -103,6 +103,56 @@ func (d *diagnostic) scan(line string, indent float32) {
 		d.root = d.root[:len(d.root)-1]
 	}
 
+	switch ty.(type) {
+	case arrayContinuing:
+		d.writeBuffer()
+		d.parseArrayCont(line, indent)
+		return
+
+	case arraySingle:
+		d.writeBuffer()
+		d.parseArraySingle(line, indent)
+		return
+
+	case arrayElement:
+		d.writeBuffer()
+		d.parseArrayElement(line, indent)
+		return
+
+	case singleLine:
+		d.writeBuffer()
+		d.parseSingleLine(line, indent)
+		return
+
+	case continuingLine:
+		d.writeBuffer()
+		d.parseContinuingLine(line, indent)
+		return
+
+	case continuingString:
+		d.continuing = continuingString{}
+		d.continuingIndent = indent
+		d.parseContinuingLine(parseContStr(line).(string)+":", indent)
+		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
+		d.last = nil
+		return
+
+	case arrContStr:
+		d.continuing = continuingString{}
+		d.continuingIndent = indent
+		d.parseArrayCont(parseArrContStr(line)+":", indent)
+		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
+		d.last = nil
+		return
+
+	case continuingArr:
+		d.continuing = continuingArr{}
+		d.continuingIndent = indent + 1
+		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
+		d.last = nil
+		return
+	}
+
 	if d.continuing != nil {
 		switch d.continuing.(type) {
 		case continuingString:
@@ -112,47 +162,5 @@ func (d *diagnostic) scan(line string, indent float32) {
 			d.parseArrayElement("- "+line, d.continuingIndent)
 			return
 		}
-	}
-
-	switch ty.(type) {
-	case arrayContinuing:
-		d.writeBuffer()
-		d.parseArrayCont(line, indent)
-
-	case arraySingle:
-		d.writeBuffer()
-		d.parseArraySingle(line, indent)
-
-	case arrayElement:
-		d.writeBuffer()
-		d.parseArrayElement(line, indent)
-
-	case singleLine:
-		d.writeBuffer()
-		d.parseSingleLine(line, indent)
-
-	case continuingLine:
-		d.writeBuffer()
-		d.parseContinuingLine(line, indent)
-
-	case continuingString:
-		d.continuing = continuingString{}
-		d.continuingIndent = indent
-		d.parseContinuingLine(parseContStr(line).(string)+":", indent)
-		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
-		d.last = nil
-
-	case arrContStr:
-		d.continuing = continuingString{}
-		d.continuingIndent = indent
-		d.parseArrayCont(parseArrContStr(line)+":", indent)
-		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
-		d.last = nil
-
-	case continuingArr:
-		d.continuing = continuingArr{}
-		d.continuingIndent = indent + 1
-		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
-		d.last = nil
 	}
 }
