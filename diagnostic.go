@@ -12,6 +12,7 @@ type singleLine struct{}
 type arraySingle struct{}
 type arrayElement struct{}
 type continuingString struct{}
+type arrContStr struct{}
 type continuingArr struct{}
 type array struct{}
 
@@ -49,18 +50,20 @@ func analyze(line string) lineType {
 	contStr, _ := regexp.MatchString(continuingStringRgx, line)
 	contArr, _ := regexp.MatchString(continuingArrRgx, line)
 
-	if arrayEl && single {
+	if contStr {
+		return continuingString{}
+	} else if arrayEl && single {
 		return arraySingle{}
 	} else if arrayEl && continuing {
 		return arrayContinuing{}
+	} else if arrayEl && contStr {
+		return arrContStr{}
 	} else if arrayEl {
 		return arrayElement{}
 	} else if single {
 		return singleLine{}
 	} else if continuing {
 		return continuingLine{}
-	} else if contStr {
-		return continuingString{}
 	} else if contArr {
 		return continuingArr{}
 	}
@@ -87,7 +90,7 @@ func (d *diagnostic) writeBuffer() {
 		line := strings.Join(d.buffer, "\n")
 		n := createNode(line, 0, nil)
 		d.tree.insert(d.continuingRoot, n)
-		d.buffer = d.buffer[:len(d.buffer)]
+		d.buffer = d.buffer[len(d.buffer):]
 	}
 }
 
@@ -136,6 +139,13 @@ func (d *diagnostic) scan(line string, indent float32) {
 		d.continuing = continuingString{}
 		d.continuingIndent = indent
 		d.parseContinuingLine(parseContStr(line).(string)+":", indent)
+		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
+		d.last = nil
+
+	case arrContStr:
+		d.continuing = continuingString{}
+		d.continuingIndent = indent
+		d.parseArrayCont(parseArrContStr(line)+":", indent)
 		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
 		d.last = nil
 

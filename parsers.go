@@ -82,7 +82,7 @@ func (d *diagnostic) parseArrayElement(line string, indent float32) (*node, floa
 
 		d.last = arrayElement{}
 		d.lastIndent = condIndent
-		return key, indent + (i+1)*2
+		return key, condIndent + 2 + (i+1)*float32(spcPerArr)*2
 	}
 	return nil, -2
 }
@@ -94,4 +94,13 @@ func parseContStr(line string) interface{} {
 		return out[1]
 	}
 	return nil
+}
+
+func parseArrContStr(line string) string {
+	re, _ := regexp.Compile(arrayElementRgx)
+	out := re.FindStringSubmatch(line)
+	if out != nil {
+		return out[1] + out[2]
+	}
+	return ""
 }

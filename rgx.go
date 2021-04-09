@@ -3,10 +3,10 @@ package main
 import "regexp"
 
 const (
-	singleLineRgx       = `([^-]+)\s*:\s*([^-\|>]+)\s*$`
+	singleLineRgx       = `([^:]+)\s*:\s*(.+)\s*$`
 	continuingLineRgx   = `([^\s]+)\s*:\s*$`
-	arrayElementRgx     = `^\s*((?:-\s*)+)\s*([^\s-:]*)\s*:?\s*([^\s-]*)\s*`
-	continuingStringRgx = `(.+)\s*:\s*[>\|]\s*$`
+	arrayElementRgx     = `^\s*((?:-\s*)+)\s*([^\s-:]*)\s*:?\s*([^\s]*)\s*`
+	continuingStringRgx = `([^\s]+)\s*:\s*[>\|]\s*`
 	continuingArrRgx    = `^\s*-\s*$`
 )
 
