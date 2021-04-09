@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -17,20 +18,26 @@ type continuingArr struct{}
 type array struct{}
 
 type diagnostic struct {
-	root             [][]interface{}
-	tree             *tree
-	continuing       lineType
-	continuingRoot   *node
-	continuingIndent float32
-	last             lineType
-	lastIndent       float32
-	buffer           []string
+	root                 [][]interface{}
+	tree                 *tree
+	continuingStr        lineType
+	continuingStrRoot    *node
+	continuingStrIndent  float32
+	continuingArr        lineType
+	continuingArrIndent  float32
+	continuingArrDim     int
+	continuingArrFlag    int
+	lastContString       lineType
+	lastContStringIndent float32
+	buffer               []string
 }
 
 func newYamlParser() *diagnostic {
 	d := new(diagnostic)
-	d.continuing = nil
-	d.last = nil
+	d.continuingStr = nil
+	d.continuingArr = nil
+	d.lastContString = nil
+	d.continuingArrDim = 0
 
 	rn := createNode("Root", 0, make([]*node, 0))
 	d.tree = new(tree)
@@ -85,11 +92,11 @@ func checkArray(p *node) *node {
 }
 
 func (d *diagnostic) writeBuffer() {
-	if d.continuing != nil {
-		d.continuing = nil
+	if d.continuingStr == (continuingString{}) {
+		d.continuingStr = nil
 		line := strings.Join(d.buffer, "\n")
 		n := createNode(line, 0, nil)
-		d.tree.insert(d.continuingRoot, n)
+		d.tree.insert(d.continuingStrRoot, n)
 		d.buffer = d.buffer[len(d.buffer):]
 	}
 }
@@ -107,60 +114,82 @@ func (d *diagnostic) scan(line string, indent float32) {
 	case arrayContinuing:
 		d.writeBuffer()
 		d.parseArrayCont(line, indent)
-		return
+		if d.continuingArr == nil {
+			return
+		}
 
 	case arraySingle:
 		d.writeBuffer()
-		d.parseArraySingle(line, indent)
-		return
+		if d.continuingArr == nil {
+			d.parseArraySingle(line, indent)
+			return
+		}
 
 	case arrayElement:
 		d.writeBuffer()
-		d.parseArrayElement(line, indent)
-		return
+		if d.continuingArr == nil {
+			d.parseArrayElement(line, indent)
+			return
+		}
 
 	case singleLine:
 		d.writeBuffer()
 		d.parseSingleLine(line, indent)
-		return
+		if d.continuingArr == nil {
+			return
+		}
 
 	case continuingLine:
 		d.writeBuffer()
 		d.parseContinuingLine(line, indent)
-		return
-
-	case continuingString:
-		d.continuing = continuingString{}
-		d.continuingIndent = indent
-		d.parseContinuingLine(parseContStr(line).(string)+":", indent)
-		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
-		d.last = nil
-		return
-
-	case arrContStr:
-		d.continuing = continuingString{}
-		d.continuingIndent = indent
-		d.parseArrayCont(parseArrContStr(line)+":", indent)
-		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
-		d.last = nil
-		return
-
-	case continuingArr:
-		d.continuing = continuingArr{}
-		d.continuingIndent = indent + 1
-		d.continuingRoot = d.root[len(d.root)-1][0].(*node)
-		d.last = nil
-		return
-	}
-
-	if d.continuing != nil {
-		switch d.continuing.(type) {
-		case continuingString:
-			d.buffer = append(d.buffer, line)
-		case continuingArr:
-			d.continuing = nil
-			d.parseArrayElement("- "+line, d.continuingIndent)
+		if d.continuingArr == nil {
 			return
 		}
+
+	case continuingString:
+		d.continuingStr = continuingString{}
+		d.continuingStrIndent = indent
+		d.parseContinuingLine(parseContStr(line).(string)+":", indent)
+		d.continuingStrRoot = d.root[len(d.root)-1][0].(*node)
+		d.lastContString = nil
+		if d.continuingArr == nil {
+			return
+		}
+
+	case arrContStr:
+		d.continuingStr = continuingString{}
+		d.continuingStrIndent = indent
+		d.parseArrayCont(parseArrContStr(line)+":", indent)
+		d.continuingStrRoot = d.root[len(d.root)-1][0].(*node)
+		d.lastContString = nil
+		if d.continuingArr == nil {
+			return
+		}
+
+	case continuingArr:
+		d.lastContString = nil
+		if d.continuingArr == nil {
+			d.continuingArr = continuingArr{}
+			d.continuingArrIndent = indent
+		}
+		d.continuingArrDim += 1
+		return
+
+	}
+
+	if d.continuingStr != nil {
+		d.buffer = append(d.buffer, line)
+	}
+	if d.continuingArr != nil {
+		head := ""
+		for i := 0; i < d.continuingArrDim; i++ {
+			head += "- "
+		}
+
+		d.parseArrayElement(head+line, d.continuingArrIndent)
+		fmt.Printf("%f\n", d.continuingArrIndent)
+		d.continuingArr = nil
+		d.continuingArrDim = 0
+		d.continuingArrFlag = 0
 	}
 }

@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type tree struct {
 	root *node
 }
@@ -41,11 +39,11 @@ func (T *tree) travel(p *node) {
 
 	if len(p.children) == 0 {
 		if p.ty == 0 {
-			fmt.Printf("%s\n", p.value)
+			//fmt.Printf("%s\n", p.value)
 		} else {
 			for _, x := range p.children {
 				if p.ty == 0 {
-					fmt.Printf("%s\n", p.value)
+					//		fmt.Printf("%s\n", p.value)
 				} else {
 					T.travel(x)
 				}

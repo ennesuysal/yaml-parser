@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -10,7 +9,7 @@ func (d *diagnostic) parseContinuingLine(line string, indent float32) {
 	out, _ := rgxShortcut(continuingLineRgx, line)
 	if out != nil {
 		key := createNode(out[0][1], 0, make([]*node, 0))
-		if d.last == (arrayElement{}) && d.lastIndent < indent && d.root[len(d.root)-1][0].(*node).ty == 1 {
+		if d.lastContString == (arrayElement{}) && d.lastContStringIndent < indent && d.root[len(d.root)-1][0].(*node).ty == 1 {
 			r := d.root[len(d.root)-1][0].(*node).value.([]interface{})
 			r[len(r)-1] = append(r[len(r)-1].([]*node), key)
 		} else {
@@ -25,7 +24,7 @@ func (d *diagnostic) parseSingleLine(line string, indent float32) {
 	if out != nil {
 		key := createNode(out[0][1], 0, make([]*node, 0))
 		value := createNode(out[0][2], 0, nil)
-		if d.last == (arrayElement{}) && d.lastIndent < indent && d.root[len(d.root)-1][0].(*node).ty == 1 {
+		if d.lastContString == (arrayElement{}) && d.lastContStringIndent < indent && d.root[len(d.root)-1][0].(*node).ty == 1 {
 			r := d.root[len(d.root)-1][0].(*node).value.([]interface{})
 			r[len(r)-1] = append(r[len(r)-1].([]*node), key)
 		} else {
@@ -72,17 +71,17 @@ func (d *diagnostic) parseArrayElement(line string, indent float32) (*node, floa
 			tmp := createNode(make([]interface{}, 0), 1, nil)
 			pa.value = append(pa.value.([]interface{}), tmp)
 			pa = tmp
-			condIndent += 2 + (i+1)*float32(spcPerArr)*2
+			condIndent += 2 + float32(spcPerArr)*2
 			d.root = append(d.root, []interface{}{pa, condIndent - 0.5})
 		}
-		fmt.Printf("%d, %f\n", spcPerArr, condIndent)
+		// fmt.Printf("%d, %f\n", spcPerArr, condIndent)
 		nodeArray := make([]*node, 0)
 		nodeArray = append(nodeArray, key)
 		pa.value = append(pa.value.([]interface{}), nodeArray)
 
-		d.last = arrayElement{}
-		d.lastIndent = condIndent
-		return key, condIndent + 2 + (i+1)*float32(spcPerArr)*2
+		d.lastContString = arrayElement{}
+		d.lastContStringIndent = condIndent
+		return key, condIndent + 2 + float32(spcPerArr)*2
 	}
 	return nil, -2
 }
