@@ -1,18 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
 
 type lineType interface{}
 type continuingLine struct{}
-type arrayContinuing struct{}
+type arrayAndContinuing struct{}
 type singleLine struct{}
-type arraySingle struct{}
+type arrayAndSingle struct{}
 type arrayElement struct{}
 type continuingString struct{}
-type arrContStr struct{}
+type arrAndContStr struct{}
 type continuingArr struct{}
 type array struct{}
 
@@ -61,13 +62,13 @@ func analyze(line string) lineType {
 	contArr, _ := regexp.MatchString(continuingArrRgx, line)
 
 	if arrayEl && contStr {
-		return arrContStr{}
+		return arrAndContStr{}
 	} else if contStr {
 		return continuingString{}
 	} else if arrayEl && single {
-		return arraySingle{}
+		return arrayAndSingle{}
 	} else if arrayEl && continuing {
-		return arrayContinuing{}
+		return arrayAndContinuing{}
 	} else if arrayEl {
 		return arrayElement{}
 	} else if single {
@@ -113,15 +114,33 @@ func (d *diagnostic) scan(line string, indent float32) {
 		d.root = d.root[:len(d.root)-1]
 	}
 
+	if d.continuingArr != nil && ty != (continuingArr{}) {
+		head := ""
+		for i := 0; i < d.continuingArrDim; i++ {
+			head += "-"
+			for j := float32(0); j < d.continuingArrSpaceCount; j++ {
+				head += " "
+			}
+		}
+		line = head + line
+		indent = d.continuingArrIndent
+		fmt.Printf("%s\n", line)
+		d.continuingArr = nil
+		d.continuingArrDim = 0
+		d.continuingArrLastIndent = 0
+		d.continuingArrSpaceCount = 0
+		d.continuingArrFlag = 0
+	}
+
 	switch ty.(type) {
-	case arrayContinuing:
+	case arrayAndContinuing:
 		d.writeBuffer()
 		if d.continuingArr == nil {
 			d.parseArrayCont(line, indent)
 			return
 		}
 
-	case arraySingle:
+	case arrayAndSingle:
 		d.writeBuffer()
 		if d.continuingArr == nil {
 			d.parseArraySingle(line, indent)
@@ -159,7 +178,7 @@ func (d *diagnostic) scan(line string, indent float32) {
 			return
 		}
 
-	case arrContStr:
+	case arrAndContStr:
 		if d.continuingArr == nil {
 			d.parseArrayCont(line, indent)
 		}
@@ -179,29 +198,5 @@ func (d *diagnostic) scan(line string, indent float32) {
 
 	if d.continuingStr != nil {
 		d.buffer = append(d.buffer, line)
-	}
-	if d.continuingArr != nil {
-		head := ""
-		for i := 0; i < d.continuingArrDim; i++ {
-			head += "-"
-			for j := float32(0); j < d.continuingArrSpaceCount; j++ {
-				head += " "
-			}
-		}
-
-		if ty == (arrContStr{}) {
-			d.continuingStr = continuingString{}
-			d.continuingStrIndent = indent
-			d.parseArrayCont(parseArrContStr(head+line)+":", d.continuingArrIndent)
-			d.continuingStrRoot = d.root[len(d.root)-1][0].(*node)
-			d.lastContString = nil
-		} else {
-			d.parseArrayElement(head+line, d.continuingArrIndent)
-		}
-		d.continuingArr = nil
-		d.continuingArrDim = 0
-		d.continuingArrLastIndent = 0
-		d.continuingArrSpaceCount = 0
-		d.continuingArrFlag = 0
 	}
 }
