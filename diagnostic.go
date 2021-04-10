@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -18,18 +17,20 @@ type continuingArr struct{}
 type array struct{}
 
 type diagnostic struct {
-	root                 [][]interface{}
-	tree                 *tree
-	continuingStr        lineType
-	continuingStrRoot    *node
-	continuingStrIndent  float32
-	continuingArr        lineType
-	continuingArrIndent  float32
-	continuingArrDim     int
-	continuingArrFlag    int
-	lastContString       lineType
-	lastContStringIndent float32
-	buffer               []string
+	root                    [][]interface{}
+	tree                    *tree
+	continuingStr           lineType
+	continuingStrRoot       *node
+	continuingStrIndent     float32
+	continuingArr           lineType
+	continuingArrIndent     float32
+	continuingArrLastIndent float32
+	continuingArrSpaceCount float32
+	continuingArrDim        int
+	continuingArrFlag       int
+	lastContString          lineType
+	lastContStringIndent    float32
+	buffer                  []string
 }
 
 func newYamlParser() *diagnostic {
@@ -38,6 +39,8 @@ func newYamlParser() *diagnostic {
 	d.continuingArr = nil
 	d.lastContString = nil
 	d.continuingArrDim = 0
+	d.continuingArrSpaceCount = 0
+	d.continuingArrLastIndent = 0
 
 	rn := createNode("Root", 0, make([]*node, 0))
 	d.tree = new(tree)
@@ -113,8 +116,8 @@ func (d *diagnostic) scan(line string, indent float32) {
 	switch ty.(type) {
 	case arrayContinuing:
 		d.writeBuffer()
-		d.parseArrayCont(line, indent)
 		if d.continuingArr == nil {
+			d.parseArrayCont(line, indent)
 			return
 		}
 
@@ -157,17 +160,14 @@ func (d *diagnostic) scan(line string, indent float32) {
 		}
 
 	case arrContStr:
-		d.continuingStr = continuingString{}
-		d.continuingStrIndent = indent
-		d.parseArrayCont(parseArrContStr(line)+":", indent)
-		d.continuingStrRoot = d.root[len(d.root)-1][0].(*node)
-		d.lastContString = nil
 		if d.continuingArr == nil {
-			return
+			d.parseArrayCont(line, indent)
 		}
 
 	case continuingArr:
 		d.lastContString = nil
+		d.continuingArrSpaceCount = (indent-d.continuingArrLastIndent)/2 - 1
+		d.continuingArrLastIndent = indent
 		if d.continuingArr == nil {
 			d.continuingArr = continuingArr{}
 			d.continuingArrIndent = indent
@@ -183,13 +183,25 @@ func (d *diagnostic) scan(line string, indent float32) {
 	if d.continuingArr != nil {
 		head := ""
 		for i := 0; i < d.continuingArrDim; i++ {
-			head += "- "
+			head += "-"
+			for j := float32(0); j < d.continuingArrSpaceCount; j++ {
+				head += " "
+			}
 		}
 
-		d.parseArrayElement(head+line, d.continuingArrIndent)
-		fmt.Printf("%f\n", d.continuingArrIndent)
+		if ty == (arrContStr{}) {
+			d.continuingStr = continuingString{}
+			d.continuingStrIndent = indent
+			d.parseArrayCont(parseArrContStr(head+line)+":", d.continuingArrIndent)
+			d.continuingStrRoot = d.root[len(d.root)-1][0].(*node)
+			d.lastContString = nil
+		} else {
+			d.parseArrayElement(head+line, d.continuingArrIndent)
+		}
 		d.continuingArr = nil
 		d.continuingArrDim = 0
+		d.continuingArrLastIndent = 0
+		d.continuingArrSpaceCount = 0
 		d.continuingArrFlag = 0
 	}
 }

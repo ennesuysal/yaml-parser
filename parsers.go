@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"regexp"
 	"strings"
 )
@@ -53,7 +54,7 @@ func (d *diagnostic) parseArrayElement(line string, indent float32) (*node, floa
 		arrCount := float32(strings.Count(out[0][1], "-"))
 		spcCount := float32(strings.Count(out[0][1], " "))
 
-		spcPerArr := int(spcCount / arrCount)
+		spcPerArr := int(math.Ceil(float64(spcCount / arrCount)))
 
 		key := createNode(out[0][2], 0, make([]*node, 0))
 
@@ -74,7 +75,7 @@ func (d *diagnostic) parseArrayElement(line string, indent float32) (*node, floa
 			condIndent += 2 + float32(spcPerArr)*2
 			d.root = append(d.root, []interface{}{pa, condIndent - 0.5})
 		}
-		// fmt.Printf("%d, %f\n", spcPerArr, condIndent)
+
 		nodeArray := make([]*node, 0)
 		nodeArray = append(nodeArray, key)
 		pa.value = append(pa.value.([]interface{}), nodeArray)
