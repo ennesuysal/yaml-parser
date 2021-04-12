@@ -15,7 +15,9 @@ type arrayElement struct{}
 type continuingString struct{}
 type arrAndContStr struct{}
 type continuingArr struct{}
-type array struct{}
+type singleLineArr struct{}
+type arrArr struct{}
+type arrSLAE struct{}
 
 type diagnostic struct {
 	root                    [][]interface{}
@@ -60,17 +62,25 @@ func analyze(line string) lineType {
 	arrayEl, _ := regexp.MatchString(arrayElementRgx, line)
 	contStr, _ := regexp.MatchString(continuingStringRgx, line)
 	contArr, _ := regexp.MatchString(continuingArrRgx, line)
+	arrArr_, _ := regexp.MatchString(arrRgx, line)
+	SLAE_, _ := regexp.MatchString(singleLineArrayRgx, line)
 
 	if arrayEl && contStr {
 		return arrAndContStr{}
 	} else if contStr {
 		return continuingString{}
+	} else if SLAE_ && arrayEl {
+		return arrSLAE{}
 	} else if arrayEl && single {
 		return arrayAndSingle{}
 	} else if arrayEl && continuing {
 		return arrayAndContinuing{}
+	} else if arrayEl && arrArr_ {
+		return arrArr{}
 	} else if arrayEl {
 		return arrayElement{}
+	} else if SLAE_ {
+		return singleLineArr{}
 	} else if single {
 		return singleLine{}
 	} else if continuing {
@@ -150,7 +160,7 @@ func (d *diagnostic) scan(line string, indent float32) {
 	case arrayElement:
 		d.writeBuffer()
 		if d.continuingArr == nil {
-			d.parseArrayElement(line, indent)
+			d.parseArrayElement(line, indent, false)
 			return
 		}
 
@@ -194,6 +204,14 @@ func (d *diagnostic) scan(line string, indent float32) {
 		d.continuingArrDim += 1
 		return
 
+	case singleLineArr:
+		d.parseSingleLineArray(line, indent)
+
+	case arrArr:
+		d.parseSLAE(line, indent)
+
+	case arrSLAE:
+		d.parseArrSLAE(line, indent)
 	}
 
 	if d.continuingStr != nil {

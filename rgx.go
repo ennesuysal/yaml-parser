@@ -4,6 +4,8 @@ import "regexp"
 
 const (
 	singleLineRgx       = `([^:]+)\s*:\s*(.+)\s*$`
+	singleLineArrayRgx  = `([^:]+)\s*:\s*(\[.+\])\s*$`
+	arrRgx              = `\s*(\[.+\])\s*`
 	continuingLineRgx   = `([^\s]+)\s*:\s*$`
 	arrayElementRgx     = `^((?:\s*-)+)\s*([^\s-:]+)\s*:?\s*([^\s]*)\s*`
 	continuingStringRgx = `([^\s]+)\s*:\s*[>\|]\s*`
