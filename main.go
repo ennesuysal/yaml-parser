@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -34,5 +35,6 @@ func main() {
 		d.scan(cutted, indent)
 	}
 
-	d.tree.travel(d.tree.root)
+	n := d.tree.getNodeValue("jobs", "build", "docker", 0, "auth", "username")
+	fmt.Printf("%v", n)
 }

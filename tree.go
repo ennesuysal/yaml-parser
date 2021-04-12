@@ -32,27 +32,40 @@ func createNode(value interface{}, ty int, children []*node) *node {
 	return n
 }
 
-func (T *tree) travel(p *node) {
-	if p == nil {
-		return
-	}
+func (T *tree) getNodeValue(path ...interface{}) interface{} {
+	root := T.root
 
-	if len(p.children) == 0 {
-		if p.ty == 0 {
-			//fmt.Printf("%s\n", p.value)
-		} else {
-			for _, x := range p.children {
-				if p.ty == 0 {
-					//		fmt.Printf("%s\n", p.value)
-				} else {
-					T.travel(x)
+	for _, x := range path {
+		if res, ok := x.(string); ok {
+			if root.ty == 2 {
+				for _, y := range root.value.([]*node) {
+					if y.value == res {
+						root = y
+					}
+				}
+			} else {
+				for _, y := range root.children {
+					if y.value == res {
+						root = y
+					}
+				}
+			}
+		} else if res, ok := x.(int); ok {
+			if root.ty == 0 {
+				root = root.children[0]
+			}
+
+			for i, x := range root.value.([]interface{}) {
+				if i == res {
+					root = x.(*node)
 				}
 			}
 		}
-		return
 	}
 
-	for _, x := range p.children {
-		T.travel(x)
+	if root.ty == 0 && root.children != nil && len(root.children) == 1 {
+		return root.children[0].value
 	}
+
+	return root
 }

@@ -12,7 +12,7 @@ func (d *diagnostic) parseContinuingLine(line string, indent float32) {
 		key := createNode(out[0][1], 0, make([]*node, 0))
 		if d.lastContString == (arrayElement{}) && d.lastContStringIndent < indent && d.root[len(d.root)-1][0].(*node).ty == 1 {
 			r := d.root[len(d.root)-1][0].(*node).value.([]interface{})
-			r[len(r)-1] = append(r[len(r)-1].([]*node), key)
+			r[len(r)-1].(*node).value = append(r[len(r)-1].(*node).value.([]*node), key)
 		} else {
 			d.tree.insert(d.root[len(d.root)-1][0].(*node), key)
 		}
@@ -27,7 +27,7 @@ func (d *diagnostic) parseSingleLine(line string, indent float32) {
 		value := createNode(out[0][2], 0, nil)
 		if d.lastContString == (arrayElement{}) && d.lastContStringIndent < indent && d.root[len(d.root)-1][0].(*node).ty == 1 {
 			r := d.root[len(d.root)-1][0].(*node).value.([]interface{})
-			r[len(r)-1] = append(r[len(r)-1].([]*node), key)
+			r[len(r)-1].(*node).value = append(r[len(r)-1].(*node).value.([]*node), key)
 		} else {
 			d.tree.insert(d.root[len(d.root)-1][0].(*node), key)
 		}
@@ -83,8 +83,8 @@ func (d *diagnostic) parseArrayElement(line string, indent float32, arr bool) (*
 			return pa, condIndent + 2 + float32(spcPerArr)*2
 		}
 
-		nodeArray := make([]*node, 0)
-		nodeArray = append(nodeArray, key)
+		nodeArray := createNode(make([]*node, 0), 2, nil) //
+		nodeArray.value = append(nodeArray.value.([]*node), key)
 		pa.value = append(pa.value.([]interface{}), nodeArray)
 
 		return key, condIndent + 2 + float32(spcPerArr)*2
@@ -99,7 +99,7 @@ func (d *diagnostic) parseSingleLineArray(line string, indent float32) {
 		value := sLineArrayHelper(out[0][2])
 		if d.lastContString == (arrayElement{}) && d.lastContStringIndent < indent && d.root[len(d.root)-1][0].(*node).ty == 1 {
 			r := d.root[len(d.root)-1][0].(*node).value.([]interface{})
-			r[len(r)-1] = append(r[len(r)-1].([]*node), key)
+			r[len(r)-1].(*node).value = append(r[len(r)-1].(*node).value.([]*node), key)
 		} else {
 			d.tree.insert(d.root[len(d.root)-1][0].(*node), key)
 		}
