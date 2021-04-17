@@ -23,7 +23,7 @@ func readFile(path string) ([]string, error) {
 	return strings.Split(string(data), "\n"), nil
 }
 
-func NewYamlParser(filePath string) *diagnostic {
+func NewYamlParser(filePath string) *Diagnostic {
 	txt, _ := readFile(filePath)
 	d := newYamlHelper()
 	for _, line := range txt {

@@ -20,7 +20,7 @@ type singleLineArr struct{}
 type arrArr struct{}
 type arrSLAE struct{}
 
-type diagnostic struct {
+type Diagnostic struct {
 	root                    [][]interface{}
 	tree                    *Tree
 	continuingStr           lineType
@@ -37,8 +37,8 @@ type diagnostic struct {
 	buffer                  []string
 }
 
-func newYamlHelper() *diagnostic {
-	d := new(diagnostic)
+func newYamlHelper() *Diagnostic {
+	d := new(Diagnostic)
 	d.continuingStr = nil
 	d.continuingArr = nil
 	d.lastContString = nil
@@ -57,7 +57,7 @@ func newYamlHelper() *diagnostic {
 	return d
 }
 
-func (d *diagnostic) diagArrContStr(line string, indent float32) {
+func (d *Diagnostic) diagArrContStr(line string, indent float32) {
 	d.continuingStr = continuingString{}
 	d.continuingStrIndent = indent
 	d.parseArrayCont(parseArrContStr(line)+":", d.continuingArrIndent)
@@ -114,7 +114,7 @@ func checkArray(p *Node) *Node {
 	return nil
 }
 
-func (d *diagnostic) writeBuffer() {
+func (d *Diagnostic) writeBuffer() {
 	if d.continuingStr == (continuingString{}) {
 		d.continuingStr = nil
 		line := strings.Join(d.buffer, "\n")
@@ -124,7 +124,7 @@ func (d *diagnostic) writeBuffer() {
 	}
 }
 
-func (d *diagnostic) scan(line string, indent float32) {
+func (d *Diagnostic) scan(line string, indent float32) {
 	ty := analyze(line)
 	if ty == (arrayElement{}) {
 		indent++

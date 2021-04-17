@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (d *diagnostic) parseContinuingLine(line string, indent float32) {
+func (d *Diagnostic) parseContinuingLine(line string, indent float32) {
 	out, _ := rgxShortcut(continuingLineRgx, line)
 	if out != nil {
 		key := CreateNode(out[0][1], 0, make([]*Node, 0))
@@ -21,7 +21,7 @@ func (d *diagnostic) parseContinuingLine(line string, indent float32) {
 	}
 }
 
-func (d *diagnostic) parseSingleLine(line string, indent float32) {
+func (d *Diagnostic) parseSingleLine(line string, indent float32) {
 	out, _ := rgxShortcut(singleLineRgx, line)
 	if out != nil {
 		key := CreateNode(out[0][1], 0, make([]*Node, 0))
@@ -37,19 +37,19 @@ func (d *diagnostic) parseSingleLine(line string, indent float32) {
 	}
 }
 
-func (d *diagnostic) parseArraySingle(line string, indent float32) {
+func (d *Diagnostic) parseArraySingle(line string, indent float32) {
 	out, _ := rgxShortcut(singleLineRgx, line)
 	child := CreateNode(out[0][2], 0, nil)
 	key, _ := d.parseArrayElement(line, indent, false)
 	d.tree.insert(key, child)
 }
 
-func (d *diagnostic) parseArrayCont(line string, indent float32) {
+func (d *Diagnostic) parseArrayCont(line string, indent float32) {
 	key, cIndent := d.parseArrayElement(line, indent, false)
 	d.root = append(d.root, []interface{}{key, cIndent})
 }
 
-func (d *diagnostic) parseArrayElement(line string, indent float32, arr bool) (*Node, float32) {
+func (d *Diagnostic) parseArrayElement(line string, indent float32, arr bool) (*Node, float32) {
 	out, _ := rgxShortcut(arrayElementRgx, line)
 	if out != nil {
 		arrCount := float32(strings.Count(out[0][1], "-"))
@@ -93,7 +93,7 @@ func (d *diagnostic) parseArrayElement(line string, indent float32, arr bool) (*
 	return nil, -2
 }
 
-func (d *diagnostic) parseSingleLineArray(line string, indent float32) {
+func (d *Diagnostic) parseSingleLineArray(line string, indent float32) {
 	out, _ := rgxShortcut(singleLineArrayRgx, line)
 	if out != nil {
 		key := CreateNode(out[0][1], 0, make([]*Node, 0))
@@ -108,14 +108,14 @@ func (d *diagnostic) parseSingleLineArray(line string, indent float32) {
 	}
 }
 
-func (d *diagnostic) parseSLAE(line string, indent float32) {
+func (d *Diagnostic) parseSLAE(line string, indent float32) {
 	out, _ := rgxShortcut(arrRgx, line)
 	child := sLineArrayHelper(out[0][1])
 	key, _ := d.parseArrayElement(line, indent, true)
 	key.value = append(key.value.([]interface{}), child)
 }
 
-func (d *diagnostic) parseArrSLAE(line string, indent float32) {
+func (d *Diagnostic) parseArrSLAE(line string, indent float32) {
 	out, _ := rgxShortcut(singleLineArrayRgx, line)
 	child := sLineArrayHelper(out[0][2])
 	key, _ := d.parseArrayElement(line, indent, false)
