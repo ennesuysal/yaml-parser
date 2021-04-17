@@ -22,9 +22,9 @@ type arrSLAE struct{}
 
 type diagnostic struct {
 	root                    [][]interface{}
-	tree                    *tree
+	tree                    *Tree
 	continuingStr           lineType
-	continuingStrRoot       *node
+	continuingStrRoot       *Node
 	continuingStrIndent     float32
 	continuingArr           lineType
 	continuingArrIndent     float32
@@ -46,8 +46,8 @@ func newYamlHelper() *diagnostic {
 	d.continuingArrSpaceCount = 0
 	d.continuingArrLastIndent = 0
 
-	rn := createNode("Root", 0, make([]*node, 0))
-	d.tree = new(tree)
+	rn := CreateNode("Root", 0, make([]*Node, 0))
+	d.tree = new(Tree)
 	d.tree.root = rn
 
 	tmp := []interface{}{rn, float32(-1)}
@@ -61,7 +61,7 @@ func (d *diagnostic) diagArrContStr(line string, indent float32) {
 	d.continuingStr = continuingString{}
 	d.continuingStrIndent = indent
 	d.parseArrayCont(parseArrContStr(line)+":", d.continuingArrIndent)
-	d.continuingStrRoot = d.root[len(d.root)-1][0].(*node)
+	d.continuingStrRoot = d.root[len(d.root)-1][0].(*Node)
 	d.lastContString = nil
 }
 
@@ -101,7 +101,7 @@ func analyze(line string) lineType {
 	return nil
 }
 
-func checkArray(p *node) *node {
+func checkArray(p *Node) *Node {
 	if p.ty == 1 {
 		return p
 	}
@@ -118,7 +118,7 @@ func (d *diagnostic) writeBuffer() {
 	if d.continuingStr == (continuingString{}) {
 		d.continuingStr = nil
 		line := strings.Join(d.buffer, "\n")
-		n := createNode(line, 0, nil)
+		n := CreateNode(line, 0, nil)
 		d.tree.insert(d.continuingStrRoot, n)
 		d.buffer = d.buffer[len(d.buffer):]
 	}
@@ -191,7 +191,7 @@ func (d *diagnostic) scan(line string, indent float32) {
 		d.continuingStr = continuingString{}
 		d.continuingStrIndent = indent
 		d.parseContinuingLine(parseContStr(line).(string)+":", indent)
-		d.continuingStrRoot = d.root[len(d.root)-1][0].(*node)
+		d.continuingStrRoot = d.root[len(d.root)-1][0].(*Node)
 		d.lastContString = nil
 		if d.continuingArr == nil {
 			return

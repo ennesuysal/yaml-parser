@@ -1,31 +1,31 @@
 // Author: Enes Uysal
 package yamlParser
 
-type tree struct {
-	root *node
+type Tree struct {
+	root *Node
 }
 
-type node struct {
+type Node struct {
 	value    interface{}
 	ty       int
-	children []*node
+	children []*Node
 }
 
-func (T *tree) insert(parent *node, child *node) {
+func (T *Tree) insert(parent *Node, child *Node) {
 
 	if parent == nil {
 		T.root = child
 		return
 	}
 
-	child.children = make([]*node, 0)
+	child.children = make([]*Node, 0)
 	if parent.children != nil {
 		parent.children = append(parent.children, child)
 	}
 }
 
-func createNode(value interface{}, ty int, children []*node) *node {
-	n := &node{
+func CreateNode(value interface{}, ty int, children []*Node) *Node {
+	n := &Node{
 		value:    value,
 		ty:       ty,
 		children: children,
@@ -33,13 +33,13 @@ func createNode(value interface{}, ty int, children []*node) *node {
 	return n
 }
 
-func (T *tree) getNodeValue(path ...interface{}) *node {
+func (T *Tree) getNodeValue(path ...interface{}) *Node {
 	root := T.root
 
 	for _, x := range path {
 		if res, ok := x.(string); ok {
 			if root.ty == 2 {
-				for _, y := range root.value.([]*node) {
+				for _, y := range root.value.([]*Node) {
 					if y.value == res {
 						root = y
 					}
@@ -58,9 +58,9 @@ func (T *tree) getNodeValue(path ...interface{}) *node {
 
 			for i, x := range root.value.([]interface{}) {
 				if i == res {
-					root = x.(*node)
-					if len(root.value.([]*node)) == 1 {
-						root = root.value.([]*node)[0]
+					root = x.(*Node)
+					if len(root.value.([]*Node)) == 1 {
+						root = root.value.([]*Node)[0]
 					}
 				}
 			}
@@ -74,7 +74,7 @@ func (T *tree) getNodeValue(path ...interface{}) *node {
 	return root
 }
 
-func (T *tree) setNodeValue(value interface{}, path ...interface{}) {
+func (T *Tree) setNodeValue(value interface{}, path ...interface{}) {
 	node := T.getNodeValue(path...)
 	node.value = value
 }
