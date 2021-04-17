@@ -1,3 +1,4 @@
+// Author: Enes Uysal
 package main
 
 import (
@@ -83,7 +84,7 @@ func (d *diagnostic) parseArrayElement(line string, indent float32, arr bool) (*
 			return pa, condIndent + 2 + float32(spcPerArr)*2
 		}
 
-		nodeArray := createNode(make([]*node, 0), 2, nil) //
+		nodeArray := createNode(make([]*node, 0), 2, nil)
 		nodeArray.value = append(nodeArray.value.([]*node), key)
 		pa.value = append(pa.value.([]interface{}), nodeArray)
 

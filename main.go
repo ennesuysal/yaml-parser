@@ -1,40 +1,14 @@
+// Yaml Parser Sample Usage
+// Author: Enes Uysal
 package main
 
-import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
-)
-
-func readFile(path string) ([]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-
-	return strings.Split(string(data), "\n"), nil
-}
+import "fmt"
 
 func main() {
-	txt, _ := readFile("test.yaml")
-	d := newYamlParser()
-	for i, line := range txt {
-		indent, cutted := trim(line)
-		//	fmt.Printf("%d\n", indent)
-		if i == 2 {
-			println()
-		}
-		d.scan(cutted, indent)
-	}
-
-	n := d.tree.getNodeValue("jobs", "build", "docker", 0, "auth", "username")
-	fmt.Printf("%v", n)
+	yp := newYamlParser("test.yaml")
+	n := yp.tree.getNodeValue("jobs", "build", "steps", 0)
+	fmt.Printf("%s\n", n.value)
+	yp.tree.setNodeValue("enes", "jobs", "build", "steps", 0)
+	n = yp.tree.getNodeValue("jobs", "build", "steps", 0)
+	fmt.Printf("%s", n.value)
 }

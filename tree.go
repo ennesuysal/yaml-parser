@@ -1,3 +1,4 @@
+// Author: Enes Uysal
 package main
 
 type tree struct {
@@ -32,7 +33,7 @@ func createNode(value interface{}, ty int, children []*node) *node {
 	return n
 }
 
-func (T *tree) getNodeValue(path ...interface{}) interface{} {
+func (T *tree) getNodeValue(path ...interface{}) *node {
 	root := T.root
 
 	for _, x := range path {
@@ -58,14 +59,22 @@ func (T *tree) getNodeValue(path ...interface{}) interface{} {
 			for i, x := range root.value.([]interface{}) {
 				if i == res {
 					root = x.(*node)
+					if len(root.value.([]*node)) == 1 {
+						root = root.value.([]*node)[0]
+					}
 				}
 			}
 		}
 	}
 
 	if root.ty == 0 && root.children != nil && len(root.children) == 1 {
-		return root.children[0].value
+		return root.children[0]
 	}
 
 	return root
+}
+
+func (T *tree) setNodeValue(value interface{}, path ...interface{}) {
+	node := T.getNodeValue(path...)
+	node.value = value
 }

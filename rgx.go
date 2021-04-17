@@ -1,3 +1,4 @@
+// Author: Enes Uysal
 package main
 
 import "regexp"
