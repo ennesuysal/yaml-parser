@@ -1,5 +1,5 @@
 // Author: Enes Uysal
-package main
+package yamlParser
 
 type tree struct {
 	root *node
