@@ -22,7 +22,7 @@ type arrSLAE struct{}
 
 type Diagnostic struct {
 	root                    [][]interface{}
-	tree                    *Tree
+	Tree                    *Tree
 	continuingStr           lineType
 	continuingStrRoot       *Node
 	continuingStrIndent     float32
@@ -47,8 +47,8 @@ func newYamlHelper() *Diagnostic {
 	d.continuingArrLastIndent = 0
 
 	rn := CreateNode("Root", 0, make([]*Node, 0))
-	d.tree = new(Tree)
-	d.tree.root = rn
+	d.Tree = new(Tree)
+	d.Tree.root = rn
 
 	tmp := []interface{}{rn, float32(-1)}
 	root := [][]interface{}{tmp}
@@ -119,7 +119,7 @@ func (d *Diagnostic) writeBuffer() {
 		d.continuingStr = nil
 		line := strings.Join(d.buffer, "\n")
 		n := CreateNode(line, 0, nil)
-		d.tree.insert(d.continuingStrRoot, n)
+		d.Tree.insert(d.continuingStrRoot, n)
 		d.buffer = d.buffer[len(d.buffer):]
 	}
 }

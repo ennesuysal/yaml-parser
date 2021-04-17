@@ -12,10 +12,10 @@ func (d *Diagnostic) parseContinuingLine(line string, indent float32) {
 	if out != nil {
 		key := CreateNode(out[0][1], 0, make([]*Node, 0))
 		if d.lastContString == (arrayElement{}) && d.lastContStringIndent < indent && d.root[len(d.root)-1][0].(*Node).ty == 1 {
-			r := d.root[len(d.root)-1][0].(*Node).value.([]interface{})
-			r[len(r)-1].(*Node).value = append(r[len(r)-1].(*Node).value.([]*Node), key)
+			r := d.root[len(d.root)-1][0].(*Node).Value.([]interface{})
+			r[len(r)-1].(*Node).Value = append(r[len(r)-1].(*Node).Value.([]*Node), key)
 		} else {
-			d.tree.insert(d.root[len(d.root)-1][0].(*Node), key)
+			d.Tree.insert(d.root[len(d.root)-1][0].(*Node), key)
 		}
 		d.root = append(d.root, []interface{}{key, indent})
 	}
@@ -27,13 +27,13 @@ func (d *Diagnostic) parseSingleLine(line string, indent float32) {
 		key := CreateNode(out[0][1], 0, make([]*Node, 0))
 		value := CreateNode(out[0][2], 0, nil)
 		if d.lastContString == (arrayElement{}) && d.lastContStringIndent < indent && d.root[len(d.root)-1][0].(*Node).ty == 1 {
-			r := d.root[len(d.root)-1][0].(*Node).value.([]interface{})
-			r[len(r)-1].(*Node).value = append(r[len(r)-1].(*Node).value.([]*Node), key)
+			r := d.root[len(d.root)-1][0].(*Node).Value.([]interface{})
+			r[len(r)-1].(*Node).Value = append(r[len(r)-1].(*Node).Value.([]*Node), key)
 		} else {
-			d.tree.insert(d.root[len(d.root)-1][0].(*Node), key)
+			d.Tree.insert(d.root[len(d.root)-1][0].(*Node), key)
 		}
 
-		d.tree.insert(key, value)
+		d.Tree.insert(key, value)
 	}
 }
 
@@ -41,7 +41,7 @@ func (d *Diagnostic) parseArraySingle(line string, indent float32) {
 	out, _ := rgxShortcut(singleLineRgx, line)
 	child := CreateNode(out[0][2], 0, nil)
 	key, _ := d.parseArrayElement(line, indent, false)
-	d.tree.insert(key, child)
+	d.Tree.insert(key, child)
 }
 
 func (d *Diagnostic) parseArrayCont(line string, indent float32) {
@@ -63,7 +63,7 @@ func (d *Diagnostic) parseArrayElement(line string, indent float32, arr bool) (*
 
 		if pa == nil {
 			pa = CreateNode(make([]interface{}, 0), 1, nil)
-			d.tree.insert(d.root[len(d.root)-1][0].(*Node), pa)
+			d.Tree.insert(d.root[len(d.root)-1][0].(*Node), pa)
 			d.root = append(d.root, []interface{}{pa, indent - 0.5})
 		}
 
@@ -71,7 +71,7 @@ func (d *Diagnostic) parseArrayElement(line string, indent float32, arr bool) (*
 		i := float32(0)
 		for ; i < arrCount-1; i++ {
 			tmp := CreateNode(make([]interface{}, 0), 1, nil)
-			pa.value = append(pa.value.([]interface{}), tmp)
+			pa.Value = append(pa.Value.([]interface{}), tmp)
 			pa = tmp
 			condIndent += 2 + float32(spcPerArr)*2
 			d.root = append(d.root, []interface{}{pa, condIndent - 0.5})
@@ -85,8 +85,8 @@ func (d *Diagnostic) parseArrayElement(line string, indent float32, arr bool) (*
 		}
 
 		nodeArray := CreateNode(make([]*Node, 0), 2, nil)
-		nodeArray.value = append(nodeArray.value.([]*Node), key)
-		pa.value = append(pa.value.([]interface{}), nodeArray)
+		nodeArray.Value = append(nodeArray.Value.([]*Node), key)
+		pa.Value = append(pa.Value.([]interface{}), nodeArray)
 
 		return key, condIndent + 2 + float32(spcPerArr)*2
 	}
@@ -99,12 +99,12 @@ func (d *Diagnostic) parseSingleLineArray(line string, indent float32) {
 		key := CreateNode(out[0][1], 0, make([]*Node, 0))
 		value := sLineArrayHelper(out[0][2])
 		if d.lastContString == (arrayElement{}) && d.lastContStringIndent < indent && d.root[len(d.root)-1][0].(*Node).ty == 1 {
-			r := d.root[len(d.root)-1][0].(*Node).value.([]interface{})
-			r[len(r)-1].(*Node).value = append(r[len(r)-1].(*Node).value.([]*Node), key)
+			r := d.root[len(d.root)-1][0].(*Node).Value.([]interface{})
+			r[len(r)-1].(*Node).Value = append(r[len(r)-1].(*Node).Value.([]*Node), key)
 		} else {
-			d.tree.insert(d.root[len(d.root)-1][0].(*Node), key)
+			d.Tree.insert(d.root[len(d.root)-1][0].(*Node), key)
 		}
-		d.tree.insert(key, value)
+		d.Tree.insert(key, value)
 	}
 }
 
@@ -112,14 +112,14 @@ func (d *Diagnostic) parseSLAE(line string, indent float32) {
 	out, _ := rgxShortcut(arrRgx, line)
 	child := sLineArrayHelper(out[0][1])
 	key, _ := d.parseArrayElement(line, indent, true)
-	key.value = append(key.value.([]interface{}), child)
+	key.Value = append(key.Value.([]interface{}), child)
 }
 
 func (d *Diagnostic) parseArrSLAE(line string, indent float32) {
 	out, _ := rgxShortcut(singleLineArrayRgx, line)
 	child := sLineArrayHelper(out[0][2])
 	key, _ := d.parseArrayElement(line, indent, false)
-	d.tree.insert(key, child)
+	d.Tree.insert(key, child)
 }
 
 func sLineArrayHelper(line string) *Node {
@@ -134,11 +134,11 @@ func sLineArrayHelper(line string) *Node {
 				n := CreateNode(buffer, 0, nil)
 				nodeArray := make([]*Node, 0)
 				nodeArray = append(nodeArray, n)
-				queue[len(queue)-1].(*Node).value = append(queue[len(queue)-1].(*Node).value.([]interface{}), nodeArray)
+				queue[len(queue)-1].(*Node).Value = append(queue[len(queue)-1].(*Node).Value.([]interface{}), nodeArray)
 				buffer = ""
 			}
 			if len(queue) > 1 {
-				queue[len(queue)-2].(*Node).value = append(queue[len(queue)-2].(*Node).value.([]interface{}), queue[len(queue)-1])
+				queue[len(queue)-2].(*Node).Value = append(queue[len(queue)-2].(*Node).Value.([]interface{}), queue[len(queue)-1])
 				queue = queue[:len(queue)-1]
 			} else {
 				break
@@ -148,7 +148,7 @@ func sLineArrayHelper(line string) *Node {
 				n := CreateNode(buffer, 0, nil)
 				nodeArray := make([]*Node, 0)
 				nodeArray = append(nodeArray, n)
-				queue[len(queue)-1].(*Node).value = append(queue[len(queue)-1].(*Node).value.([]interface{}), nodeArray)
+				queue[len(queue)-1].(*Node).Value = append(queue[len(queue)-1].(*Node).Value.([]interface{}), nodeArray)
 				buffer = ""
 			}
 		} else {

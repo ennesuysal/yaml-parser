@@ -6,7 +6,7 @@ type Tree struct {
 }
 
 type Node struct {
-	value    interface{}
+	Value    interface{}
 	ty       int
 	children []*Node
 }
@@ -26,27 +26,27 @@ func (T *Tree) insert(parent *Node, child *Node) {
 
 func CreateNode(value interface{}, ty int, children []*Node) *Node {
 	n := &Node{
-		value:    value,
+		Value:    value,
 		ty:       ty,
 		children: children,
 	}
 	return n
 }
 
-func (T *Tree) getNodeValue(path ...interface{}) *Node {
+func (T *Tree) GetNodeValue(path ...interface{}) *Node {
 	root := T.root
 
 	for _, x := range path {
 		if res, ok := x.(string); ok {
 			if root.ty == 2 {
-				for _, y := range root.value.([]*Node) {
-					if y.value == res {
+				for _, y := range root.Value.([]*Node) {
+					if y.Value == res {
 						root = y
 					}
 				}
 			} else {
 				for _, y := range root.children {
-					if y.value == res {
+					if y.Value == res {
 						root = y
 					}
 				}
@@ -56,11 +56,11 @@ func (T *Tree) getNodeValue(path ...interface{}) *Node {
 				root = root.children[0]
 			}
 
-			for i, x := range root.value.([]interface{}) {
+			for i, x := range root.Value.([]interface{}) {
 				if i == res {
 					root = x.(*Node)
-					if len(root.value.([]*Node)) == 1 {
-						root = root.value.([]*Node)[0]
+					if len(root.Value.([]*Node)) == 1 {
+						root = root.Value.([]*Node)[0]
 					}
 				}
 			}
@@ -74,7 +74,7 @@ func (T *Tree) getNodeValue(path ...interface{}) *Node {
 	return root
 }
 
-func (T *Tree) setNodeValue(value interface{}, path ...interface{}) {
-	node := T.getNodeValue(path...)
-	node.value = value
+func (T *Tree) SetNodeValue(value interface{}, path ...interface{}) {
+	node := T.GetNodeValue(path...)
+	node.Value = value
 }
