@@ -134,6 +134,7 @@ func (d *Diagnostic) scan(line string, indent float32) {
 	}
 
 	if d.continuingArr != nil && ty != (continuingArr{}) {
+		d.continuingArrSpaceCount = (indent-d.continuingArrLastIndent)/2 - 1
 		head := ""
 		for i := 0; i < d.continuingArrDim; i++ {
 			head += "-"
