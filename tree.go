@@ -84,7 +84,7 @@ func (T *Tree) SetNodeValue(value interface{}, path ...interface{}) {
 }
 
 func writeFileHelper(n *Node, txt string, indent int, parent int) string {
-	if n.ty != 1 && n.ty != 2 && len(n.children) == 0 {
+	if n.ty != 1 && n.ty != 2 && parent != 1 && len(n.children) == 0 {
 		txt += " "
 	} else if n.ty != 1 && n.ty != 2 {
 		for i := 0; i < indent; i++ {
