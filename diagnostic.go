@@ -2,7 +2,6 @@
 package yamlParser
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -144,7 +143,6 @@ func (d *Diagnostic) scan(line string, indent float32) {
 		}
 		line = head + line
 		indent = d.continuingArrIndent
-		fmt.Printf("%s\n", line)
 		d.continuingArr = nil
 		d.continuingArrDim = 0
 		d.continuingArrLastIndent = 0

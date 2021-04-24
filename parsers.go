@@ -132,9 +132,9 @@ func sLineArrayHelper(line string) *Node {
 		} else if x == ']' {
 			if buffer != "" {
 				n := CreateNode(buffer, 0, nil)
-				nodeArray := make([]*Node, 0)
-				nodeArray = append(nodeArray, n)
-				queue[len(queue)-1].Value = append(queue[len(queue)-1].Value.([][]*Node), nodeArray)
+				nodeArray := CreateNode(make([]*Node, 0), 2, nil)
+				nodeArray.Value = append(nodeArray.Value.([]*Node), n)
+				queue[len(queue)-1].Value = append(queue[len(queue)-1].Value.([]*Node), nodeArray)
 				buffer = ""
 			}
 			if len(queue) > 1 {
@@ -146,9 +146,9 @@ func sLineArrayHelper(line string) *Node {
 		} else if x == ',' {
 			if buffer != "" {
 				n := CreateNode(buffer, 0, nil)
-				nodeArray := make([]*Node, 0)
-				nodeArray = append(nodeArray, n)
-				queue[len(queue)-1].Value = append(queue[len(queue)-1].Value.([][]*Node), nodeArray)
+				nodeArray := CreateNode(make([]*Node, 0), 2, nil)
+				nodeArray.Value = append(nodeArray.Value.([]*Node), n)
+				queue[len(queue)-1].Value = append(queue[len(queue)-1].Value.([]*Node), nodeArray)
 				buffer = ""
 			}
 		} else {
