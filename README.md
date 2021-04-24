@@ -16,3 +16,6 @@
 
 #### Set Value
     yp.Tree.SetNodeValue("newValue", "build", "docker", 0)
+
+#### Write to file
+    yp.Tree.WriteFile("output.yaml")
