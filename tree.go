@@ -60,9 +60,9 @@ func (T *Tree) GetNodeValue(path ...interface{}) *Node {
 				root = root.children[0]
 			}
 
-			for i, x := range root.Value.([]interface{}) {
+			for i, x := range root.Value.([]*Node) {
 				if i == res {
-					root = x.(*Node)
+					root = x
 					if len(root.Value.([]*Node)) == 1 {
 						root = root.Value.([]*Node)[0]
 					}
